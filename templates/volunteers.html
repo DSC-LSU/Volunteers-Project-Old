@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Volunteers</title>
+    <style>
+        div {
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        li button {
+            cursor: pointer;
+            outline: none;
+            color: red;
+        }
+
+        li {
+            border: solid;
+            border-color: red;
+            margin-top: 24px;
+            padding: 8px;
+            border-width: 1px;
+            clear: both;
+        }
+    </style>
+</head>
+
+<body>
+<ul>
+    <form>
+        <label for="name">Name</label>
+        <input id="name" type="text" name="name">
+        <button type="submit">Add volunteer</button>
+    </form>
+
+    {% for volunteer in volunteers %}
+    <li>
+        <div>
+            <b>Id: {{ volunteer.id }}</b>
+            <h2>{{ volunteer.name }}</h2>
+            <button data-id="{{ volunteer.id }}">&cross;</button>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+
+<template>
+    <li>
+        <div>
+            <b></b>
+            <h2></h2>
+            <button>&cross;</button>
+        </div>
+    </li>
+</template>
+
+<script>
+    form = document.querySelector('form');
+    form.onsubmit = function (e) {
+        e.preventDefault();
+        let name = document.getElementById('name').value;
+        fetch('/volunteers', {
+            method: 'POST',
+            body: JSON.stringify({
+                'name': name
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(function (response) {
+            return response.json()
+        }).then(function (jsonResponse) {
+            console.log(jsonResponse);
+            if (jsonResponse['success']) {
+                template = populateTemplate(jsonResponse['volunteer']['id'], name);
+                ul = document.querySelector('ul');
+                ul.appendChild(template);
+            } else {
+                alert('Error adding volunteer');
+            }
+        }).catch(function (e) {
+            console.log(e);
+            alert('Error adding volunteer');
+        })
+    }
+
+    function populateTemplate(id, name) {
+        template = document.querySelector('template');
+        template = template.content.cloneNode(true);
+        subtitle = template.querySelector('b');
+        subtitle.innerHTML = 'Id: ' + id;
+        title = template.querySelector('h2');
+        title.innerHTML = name;
+        deleteButton = template.querySelector('button');
+        deleteButton.setAttribute('data-id', id);
+        addDeleteButtonClickListener(deleteButton);
+        return template;
+    }
+</script>
+
+<script>
+    deleteButtons = document.querySelectorAll('li button');
+    deleteButtons.forEach(function (button) {
+        addDeleteButtonClickListener(button);
+    })
+
+    function addDeleteButtonClickListener(button) {
+        button.onclick = function (e) {
+            volunteer_id = e.target.dataset['id']
+            fetch('/volunteers/' + volunteer_id, {
+                method: 'DELETE'
+            }).then(function (response) {
+                return response.json()
+            }).then(function (jsonResponse) {
+                if (jsonResponse['success']) {
+                    ul = document.querySelector('ul');
+                    ul.removeChild(e.target.parentNode.parentNode);
+                } else {
+                    alert('Error deleting the volunteer');
+                }
+            }).catch(function (e) {
+                console.log(e);
+                alert('Error deleting the volunteer');
+            })
+        }
+    }
+</script>
+
+</body>
+</html>
