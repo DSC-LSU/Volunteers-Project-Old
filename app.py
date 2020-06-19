@@ -2,10 +2,11 @@ from flask import Flask, request, abort, jsonify, render_template, redirect, \
     url_for
 from flask_migrate import Migrate
 from database.models import setup_db, db, db_drop_and_create_all, Volunteer
+from utils.phoneutils import *
 
 app = Flask(__name__)
 setup_db(app)
-migrate = Migrate(app, db)
+migrate = Migrate(app, db, compare_type=True)
 
 
 @app.route('/', methods=['GET'])
@@ -16,6 +17,7 @@ def index():
 @app.route('/volunteers', methods=['GET'])
 def get_volunteers():
     volunteers = Volunteer.query.all()
+    volunteers = [volunteer.format() for volunteer in volunteers]
     return render_template('volunteers.html', volunteers=volunteers)
 
     # return jsonify({
@@ -29,11 +31,12 @@ def post_volunteer():
     if request.data == b'':
         abort(400)
     body = request.get_json()
-    if 'name' not in body:
+    if 'name' not in body or 'phone' not in body:
         abort(400)
 
     try:
-        volunteer = Volunteer(name=body['name'])
+        phone = get_phone_save_format(body['phone'])
+        volunteer = Volunteer(name=body['name'], phone=phone)
         volunteer.insert()
         db.session.commit()
         return jsonify({

@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from utils.phoneutils import *
 
 SQLALCHEMY_DATABASE_URI = 'postgres://{}:{}@{}/{}'.format('postgres',
                                                           'Ropac123',
@@ -20,17 +21,20 @@ def db_drop_and_create_all():
 
 
 class Volunteer(db.Model):
-    __tablename__ = 'volunteer'
+    __tablename__ = 'volunteers'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), nullable=False)
+    phone = db.Column(db.String())
 
-    def __init__(self, name):
+    def __init__(self, name, phone):
         self.name = name
+        self.phone = phone
 
     def format(self):
         return {
             'id': self.id,
-            'name': self.name
+            'name': self.name,
+            'phone': get_phone_display_format(self.phone)
         }
 
     def insert(self):
@@ -38,4 +42,3 @@ class Volunteer(db.Model):
 
     def delete(self):
         db.session.delete(self)
-
