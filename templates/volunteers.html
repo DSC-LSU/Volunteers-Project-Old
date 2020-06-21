@@ -33,6 +33,8 @@
         <input id="name" type="text" name="name">
         <label for="phone">Phone</label>
         <input id="phone" type="tel" name="phone">
+        <label for="email">Email</label>
+        <input id="email" type="email" name="email">
         <button type="submit">Add volunteer</button>
     </form>
 
@@ -42,6 +44,7 @@
             <b>Id: {{ volunteer.id }}</b>
             <h2>{{ volunteer.name }}</h2>
             <b>{{ volunteer.phone }}</b>
+            <b>{{ volunteer.email }}</b>
             <button data-id="{{ volunteer.id }}">&cross;</button>
         </div>
     </li>
@@ -54,6 +57,7 @@
             <b class="id"></b>
             <h2 class="name"></h2>
             <b class="phone"></b>
+            <b class="email"></b>
             <button>&cross;</button>
         </div>
     </li>
@@ -65,11 +69,13 @@
         e.preventDefault();
         let name = document.getElementById('name').value;
         let phone = document.getElementById('phone').value;
+        let email = document.getElementById('email').value;
         fetch('/volunteers', {
             method: 'POST',
             body: JSON.stringify({
                 'name': name,
-                'phone': phone
+                'phone': phone,
+                'email': email
             }),
             headers: {
                 'Content-Type': 'application/json'
@@ -79,7 +85,7 @@
         }).then(function (jsonResponse) {
             console.log(jsonResponse);
             if (jsonResponse['success']) {
-                template = populateTemplate(jsonResponse['volunteer']['id'], name, phone);
+                template = populateTemplate(jsonResponse['volunteer']['id'], name, phone, email);
                 ul = document.querySelector('ul');
                 ul.appendChild(template);
             } else {
@@ -91,7 +97,7 @@
         })
     }
 
-    function populateTemplate(id, name, phone) {
+    function populateTemplate(id, name, phone, email) {
         template = document.querySelector('template');
         template = template.content.cloneNode(true);
         idNode = template.querySelector('.id');
@@ -100,6 +106,8 @@
         nameNode.innerHTML = name;
         phoneNode = template.querySelector('.phone');
         phoneNode.innerHTML = phone;
+        emailNode = template.querySelector('.email');
+        emailNode.innerHTML = email;
         deleteButton = template.querySelector('button');
         deleteButton.setAttribute('data-id', id);
         addDeleteButtonClickListener(deleteButton);

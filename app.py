@@ -31,12 +31,12 @@ def post_volunteer():
     if request.data == b'':
         abort(400)
     body = request.get_json()
-    if 'name' not in body or 'phone' not in body:
+    if 'name' not in body or 'phone' not in body or 'email' not in body:
         abort(400)
 
     try:
         phone = get_phone_save_format(body['phone'])
-        volunteer = Volunteer(name=body['name'], phone=phone)
+        volunteer = Volunteer(name=body['name'], phone=phone, email=body['email'])
         volunteer.insert()
         db.session.commit()
         return jsonify({
