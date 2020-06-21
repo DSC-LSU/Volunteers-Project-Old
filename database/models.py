@@ -26,18 +26,21 @@ class Volunteer(db.Model):
     name = db.Column(db.String(), nullable=False)
     phone = db.Column(db.String())
     email = db.Column(db.String())
+    gender = db.Column(db.Integer)
 
-    def __init__(self, name, phone, email):
+    def __init__(self, name, phone, email, gender):
         self.name = name
         self.phone = phone
         self.email = email
+        self.gender = gender
 
     def format(self):
         return {
             'id': self.id,
             'name': self.name,
             'phone': get_phone_display_format(self.phone),
-            'email': self.email
+            'email': self.email,
+            'gender': self.gender
         }
 
     def insert(self):

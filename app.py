@@ -36,7 +36,7 @@ def post_volunteer():
 
     try:
         phone = get_phone_save_format(body['phone'])
-        volunteer = Volunteer(name=body['name'], phone=phone, email=body['email'])
+        volunteer = Volunteer(name=body['name'], phone=phone, email=body['email'], gender=body['gender'])
         volunteer.insert()
         db.session.commit()
         return jsonify({

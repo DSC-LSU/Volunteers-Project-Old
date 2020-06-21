@@ -35,16 +35,24 @@
         <input id="phone" type="tel" name="phone">
         <label for="email">Email</label>
         <input id="email" type="email" name="email">
+        <label for="gender">Gender</label>
+        <select id="gender" name="gender">
+            <option value="0">Male</option>
+            <option value="1">Female</option>
+            <option value="2">Others</option>
+            <option value="3">Prefer not to say</option>
+        </select>
         <button type="submit">Add volunteer</button>
     </form>
 
     {% for volunteer in volunteers %}
     <li>
         <div>
-            <b>Id: {{ volunteer.id }}</b>
-            <h2>{{ volunteer.name }}</h2>
-            <b>{{ volunteer.phone }}</b>
-            <b>{{ volunteer.email }}</b>
+            <b class="id">Id: {{ volunteer.id }}</b>
+            <h2 class="name">{{ volunteer.name }}</h2>
+            <b class="phone">{{ volunteer.phone }}</b>
+            <b class="email">{{ volunteer.email }}</b>
+            <b class="gender">{{ volunteer.gender }}</b>
             <button data-id="{{ volunteer.id }}">&cross;</button>
         </div>
     </li>
@@ -58,10 +66,71 @@
             <h2 class="name"></h2>
             <b class="phone"></b>
             <b class="email"></b>
+            <b class="gender"></b>
             <button>&cross;</button>
         </div>
     </li>
 </template>
+
+<script>
+    GENDER_MALE_STRING = 'Male';
+    GENDER_FEMALE_STRING = 'Female';
+    GENDER_OTHERS_STRING = 'Others';
+    GENDER_PREFER_NOT_TO_SAY_STRING = 'Prefer not to say';
+
+    GENDER_MALE = 0;
+    GENDER_FEMALE = 1;
+    GENDER_OTHERS = 2;
+    GENDER_PREFER_NOT_TO_SAY = 3;
+
+    GENDER_ERROR_STRING = 'Error';
+    GENDER_ERROR = -1;
+
+    function getGenderString(gender) {
+        console.log(gender);
+        console.log(typeof gender);
+        gender = parseInt(gender);
+        genderString = GENDER_ERROR_STRING;
+        console.log(gender);
+        console.log(typeof gender);
+        if (gender === GENDER_MALE) {
+            genderString = GENDER_MALE_STRING;
+        } else if (gender === GENDER_FEMALE) {
+            genderString = GENDER_FEMALE_STRING;
+        } else if (gender === GENDER_OTHERS) {
+            genderString = GENDER_OTHERS_STRING;
+        } else if (gender === GENDER_PREFER_NOT_TO_SAY) {
+            genderString = GENDER_PREFER_NOT_TO_SAY_STRING;
+        }
+        return genderString;
+    }
+
+    function getGenderValue(genderString) {
+        genderString = genderString.toString();
+        gender = GENDER_ERROR;
+        if (genderString === GENDER_MALE_STRING) {
+            gender = GENDER_MALE;
+        } else if (genderString === GENDER_FEMALE_STRING) {
+            gender = GENDER_FEMALE;
+        } else if (genderString === GENDER_OTHERS_STRING) {
+            gender = GENDER_OTHERS;
+        } else if (genderString === GENDER_PREFER_NOT_TO_SAY_STRING) {
+            gender = GENDER_PREFER_NOT_TO_SAY;
+        }
+        return gender;
+    }
+
+    function setupGenderStrings() {
+        genderNodes = document.querySelectorAll('li .gender');
+        genderNodes.forEach(function (genderNode, index) {
+            // console.log(genderNode.innerHTML);
+            // console.log(typeof genderNode.innerHTML);
+            genderNode.innerHTML = getGenderString(genderNode.innerHTML);
+        });
+    }
+
+    setupGenderStrings();
+</script>
 
 <script>
     form = document.querySelector('form');
@@ -70,12 +139,14 @@
         let name = document.getElementById('name').value;
         let phone = document.getElementById('phone').value;
         let email = document.getElementById('email').value;
+        let gender = document.getElementById('gender').value;
         fetch('/volunteers', {
             method: 'POST',
             body: JSON.stringify({
                 'name': name,
                 'phone': phone,
-                'email': email
+                'email': email,
+                'gender': gender
             }),
             headers: {
                 'Content-Type': 'application/json'
@@ -85,7 +156,7 @@
         }).then(function (jsonResponse) {
             console.log(jsonResponse);
             if (jsonResponse['success']) {
-                template = populateTemplate(jsonResponse['volunteer']['id'], name, phone, email);
+                template = populateTemplate(jsonResponse['volunteer']['id'], name, phone, email, gender);
                 ul = document.querySelector('ul');
                 ul.appendChild(template);
             } else {
@@ -97,7 +168,7 @@
         })
     }
 
-    function populateTemplate(id, name, phone, email) {
+    function populateTemplate(id, name, phone, email, gender) {
         template = document.querySelector('template');
         template = template.content.cloneNode(true);
         idNode = template.querySelector('.id');
@@ -105,13 +176,23 @@
         nameNode = template.querySelector('.name');
         nameNode.innerHTML = name;
         phoneNode = template.querySelector('.phone');
-        phoneNode.innerHTML = phone;
+        phoneNode.innerHTML = getPhoneString(phone);
         emailNode = template.querySelector('.email');
         emailNode.innerHTML = email;
+        genderNode = template.querySelector('.gender');
+        genderNode.innerHTML = getGenderString(gender);
         deleteButton = template.querySelector('button');
         deleteButton.setAttribute('data-id', id);
         addDeleteButtonClickListener(deleteButton);
         return template;
+    }
+
+    function getPhoneString(phone) {
+        phone = phone.toString();
+        if (phone.length !== 10) {
+            return phone;
+        }
+        return `(${phone.slice(0,3)}) ${phone.slice(3, 6)}-${phone.slice(6)}`;
     }
 </script>
 
